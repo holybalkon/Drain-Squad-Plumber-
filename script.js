@@ -1,7 +1,71 @@
 document.documentElement.classList.remove('no-js');
+document.documentElement.classList.add('js');
 
 (function () {
   'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Mobile menu
+  var toggle = document.querySelector('.nav-toggle');
+  var nav = document.getElementById('primary-nav');
+  if (toggle && nav) {
+    var setMenu = function (open) {
+      nav.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    };
+    toggle.addEventListener('click', function () { setMenu(!nav.classList.contains('is-open')); });
+    nav.addEventListener('click', function (e) { if (e.target.closest('a')) { setMenu(false); } });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { setMenu(false); toggle.focus(); } });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.site-header')) { setMenu(false); } });
+  }
+
+  // Header shadow once the page is scrolled
+  var header = document.querySelector('.site-header');
+  if (header) {
+    var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 8); };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // Scroll reveal with a small stagger between siblings
+  var revealSel = '.sec-head, .offers-head, .why-head, .team-head, .svc-card, .price-card, .price-note, .offer, ' +
+    '.how-panel, .step, .review, .gsummary, .form-card, .faq-item, .locate-info, .paybar-text, .paybar-cta, .chips li';
+  var targets = document.querySelectorAll(revealSel);
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    targets.forEach(function (el) {
+      var sibs = el.parentElement ? Array.prototype.filter.call(el.parentElement.children, function (c) { return c.matches(revealSel); }) : [];
+      el.style.transitionDelay = (Math.min(sibs.indexOf(el), 5) * 90) + 'ms';
+      el.classList.add('js-reveal');
+      io.observe(el);
+    });
+  }
+
+  // Highlight the nav link of the section in view (home page)
+  var navLinks = document.querySelectorAll('.nav a[href*="#"]');
+  if ('IntersectionObserver' in window && navLinks.length) {
+    var map = {};
+    navLinks.forEach(function (a) { map[a.getAttribute('href').split('#')[1]] = a; });
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var a = map[e.target.id];
+        if (a && e.isIntersecting) {
+          navLinks.forEach(function (l) { l.classList.remove('is-active'); });
+          a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    Object.keys(map).forEach(function (id) { var s = document.getElementById(id); if (s) { spy.observe(s); } });
+  }
 
   // FAQ accordion: collapse after load; answers stay in the DOM
   document.querySelectorAll('.faq-item').forEach(function (item) {

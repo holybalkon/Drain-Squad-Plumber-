@@ -28,7 +28,7 @@
 <meta name="twitter:image" content="https://www.example.com/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script type="application/ld+json">
 {
@@ -111,7 +111,9 @@
             }
           }
         ]
-      }
+      },
+      "telephone": "+16477882840",
+      "email": "info@drainsquadplumbing.ca"
     },
     {
       "@type": [
@@ -169,12 +171,13 @@
     <a class="brand" href="index.html" aria-label="Drain Squad Plumber, home">
       <img class="logo-art" src="logo.svg" width="1380" height="900" alt="" aria-hidden="true">
     </a>
-    <nav class="nav" aria-label="Primary">
+    <nav class="nav" id="primary-nav" aria-label="Primary">
       <a href="index.html#services">Services</a><a href="index.html#pricing">Pricing</a><a href="index.html#why">Why us</a><a href="index.html#reviews">Reviews</a><a href="index.html#areas">Areas</a><a href="about.html">About</a>
     </nav>
     <div class="header-actions">
-      <a class="btn btn-ghost" href="#contact">Talk to an Expert</a>
+      <a class="btn btn-ghost" href="tel:+16477882840">Talk to an Expert</a>
       <a class="btn btn-primary" href="#contact">Book Free Quote</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu"><span></span><span></span><span></span></button>
     </div>
   </div>
 </header>
@@ -186,7 +189,7 @@
       <div>
         <h1 class="display" id="about-drain-squad-plumber-h">About Drain Squad Plumber</h1>
         <p class="svc-sub">Professional drain and plumbing service built on honest work and clear communication.</p>
-        <div class="hero-actions"><a class="btn btn-primary" href="#contact">Talk to an Expert</a></div>
+        <div class="hero-actions"><a class="btn btn-primary" href="tel:+16477882840">Talk to an Expert</a></div>
       </div>
       <div class="svc-art mp-green" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
     </div>
@@ -229,8 +232,9 @@
         <h2 class="display" id="contact-h">Need help now? Talk to the Squad.</h2>
         <p class="contact-lead">Tell us what’s going on and we’ll help coordinate the next steps.</p>
         <p class="contact-call">Prefer to talk?
-          <a href="#contact"><span class="ph">[Phone]</span></a>
+          <a href="tel:+16477882840">647-788-2840</a>
         </p>
+        <p class="contact-email">Email: <a href="mailto:info@drainsquadplumbing.ca">info@drainsquadplumbing.ca</a></p>
         <p class="contact-hours">Hours: <span class="ph">[Hours]</span></p>
       </div>
       <div class="form-card">
@@ -277,8 +281,9 @@
       <h2 class="display" id="loc-title">Find Drain Squad Plumber</h2>
       <p class="locate-lead">Serving the surrounding area. Call us or book online and we’ll take it from there.</p>
       <dl class="locate-list">
-        <div><dt>Phone</dt><dd><a href="#contact"><span class="ph">[Phone]</span></a></dd></div>
+        <div><dt>Phone</dt><dd><a href="tel:+16477882840">647-788-2840</a></dd></div>
         <div><dt>Address</dt><dd><span class="ph">[Street address, City, Province/State, Postal code]</span></dd></div>
+        <div><dt>Email</dt><dd><a href="mailto:info@drainsquadplumbing.ca">info@drainsquadplumbing.ca</a></dd></div>
         <div><dt>Hours</dt><dd><span class="ph">[Hours]</span></dd></div>
       </dl>
       <a class="btn btn-primary" href="#contact">Book Free Quote</a>
@@ -309,7 +314,7 @@
       </div>
       <div class="footer-contact">
         <h2>Contact</h2>
-        <p>Call <span class="ph">[Phone]</span></p><p>Hours: <span class="ph">[Hours]</span></p><p><span class="ph">[Street address, City, Province/State, Postal code]</span></p>
+        <p>Call <a href="tel:+16477882840">647-788-2840</a></p><p>Email: <a href="mailto:info@drainsquadplumbing.ca">info@drainsquadplumbing.ca</a></p><p>Hours: <span class="ph">[Hours]</span></p><p><span class="ph">[Street address, City, Province/State, Postal code]</span></p>
       </div>
       <div>
         <h2>Drains &amp; Sewers</h2>
@@ -338,6 +343,10 @@
     </div>
   </div>
 </footer>
+<div class="mobile-bar">
+  <a class="btn btn-ghost" href="tel:+16477882840">Call us</a>
+  <a class="btn btn-primary" href="#contact">Free Quote</a>
+</div>
 
 <script src="script.js" defer></script>
 </body>

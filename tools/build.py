@@ -19,8 +19,9 @@ CONFIG = dict(
     GEO_PLACENAME="",       # e.g. "Calgary, Alberta, Canada"  (geo.placename)
     GEO_REGION="",          # e.g. "CA-AB"                      (geo.region)
     LAT="", LNG="",         # e.g. "51.0447", "-114.0719"       (ICBM)
-    PHONE_DISPLAY="",       # e.g. "(403) 555-0123"
-    PHONE_TEL="",           # e.g. "+14035550123"
+    PHONE_DISPLAY="647-788-2840",       # e.g. "(403) 555-0123"
+    PHONE_TEL="+16477882840",           # e.g. "+14035550123"
+    EMAIL="info@drainsquadplumbing.ca",   # contact email
     HOURS="",               # e.g. "Mon-Fri 8:00-18:00"
     ADDRESS_TEXT="",        # one-line address shown on the page
     ADDRESS_SCHEMA=None,    # e.g. {"streetAddress":"...","addressLocality":"...","addressRegion":"...","postalCode":"...","addressCountry":"CA"}
@@ -365,8 +366,15 @@ def label_sections(h):
 def fill(h):
     """Substitute known config values for the visible placeholders."""
     if C["PHONE_DISPLAY"]:
+        tel_link = f'<a href="{TELHREF}">{esc(C["PHONE_DISPLAY"])}</a>'
+        h = h.replace('<a href="#contact"><span class="ph">[Phone]</span></a>', tel_link)
+        h = h.replace('<p>Call <span class="ph">[Phone]</span></p>', f'<p>Call {tel_link}</p>')
         h = h.replace('<span class="ph">[Phone]</span>', esc(C["PHONE_DISPLAY"]))
     h = h.replace('href="tel:"', f'href="{TELHREF}"')
+    if C["EMAIL"]:
+        mail = f'<a href="mailto:{C["EMAIL"]}">{esc(C["EMAIL"])}</a>'
+        h = h.replace('<p class="contact-hours">', f'<p class="contact-email">Email: {mail}</p>\n        <p class="contact-hours">', 1)
+        h = h.replace('<div><dt>Hours</dt>', f'<div><dt>Email</dt><dd>{mail}</dd></div>\n        <div><dt>Hours</dt>', 1)
     if C["HOURS"]:
         h = h.replace('<span class="ph">[Hours]</span>', esc(C["HOURS"]))
     if C["ADDRESS_TEXT"]:
@@ -391,12 +399,13 @@ HEADER = f'''<header class="site-header">
     <a class="brand" href="/" aria-label="{BRAND}, home">
       <img class="logo-art" src="logo.svg" width="1380" height="900" alt="" aria-hidden="true">
     </a>
-    <nav class="nav" aria-label="Primary">
+    <nav class="nav" id="primary-nav" aria-label="Primary">
       {"".join(f'<a href="{u}">{n}</a>' for n, u in NAV)}
     </nav>
     <div class="header-actions">
       {BTN["expert"]}
       {BTN["quote"]}
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu"><span></span><span></span><span></span></button>
     </div>
   </div>
 </header>'''
@@ -405,6 +414,8 @@ HEADER = f'''<header class="site-header">
 def footer():
     contact = []
     contact.append(f'<p>Call <span class="ph">[Phone]</span></p>')
+    if C["EMAIL"]:
+        contact.append(f'<p>Email: <a href="mailto:{C["EMAIL"]}">{esc(C["EMAIL"])}</a></p>')
     contact.append(f'<p>Hours: <span class="ph">[Hours]</span></p>')
     contact.append(f'<p><span class="ph">[Street address, City, Province/State, Postal code]</span></p>')
     lic = '<p>License #: <span class="ph">[Number]</span></p>'
@@ -479,6 +490,8 @@ def org_node():
     }
     if C["PHONE_TEL"]:
         n["telephone"] = C["PHONE_TEL"]
+    if C["EMAIL"]:
+        n["email"] = C["EMAIL"]
     if C["ADDRESS_SCHEMA"]:
         n["address"] = dict({"@type": "PostalAddress"}, **C["ADDRESS_SCHEMA"])
     if CITY:
@@ -567,14 +580,21 @@ def head(path, title, desc, graph_obj=None, noindex=False):
 <meta name="twitter:image" content="{D}/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 {ld}</head>'''
+
+
+MOBILE_BAR = f'''<div class="mobile-bar">
+  <a class="btn btn-ghost" href="{TELHREF}">Call us</a>
+  <a class="btn btn-primary" href="#contact">Free Quote</a>
+</div>'''
 
 
 def document(path, title, desc, main_html, graph_obj=None, crumb_name=None, noindex=False):
     main_html = label_sections(main_html)
     header = HEADER.replace('href="#contact"', 'href="/#contact"') if noindex else HEADER
+    mobile_bar = MOBILE_BAR.replace('href="#contact"', 'href="/#contact"') if noindex else MOBILE_BAR
     body = f'''<body>
 <a class="skip-link" href="#main-content">Skip to main content</a>
 {DEFS}
@@ -587,6 +607,7 @@ def document(path, title, desc, main_html, graph_obj=None, crumb_name=None, noin
 </main>
 
 {footer()}
+{mobile_bar}
 
 <script src="script.js" defer></script>
 </body>'''
@@ -806,7 +827,7 @@ css += """
 
 /* FAQ accordion: answers always stay in the DOM; without JS they are open */
 .faq-item h3{margin:0;font-size:inherit;line-height:inherit}
-.faq-trigger{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;padding:22px 0;background:none;border:0;color:inherit;font-family:var(--display);font-style:italic;font-weight:800;font-size:1.7rem;line-height:1.1;text-align:left;cursor:pointer}
+.faq-trigger{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;padding:22px 0;background:none;border:0;color:inherit;font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.1;text-align:left;cursor:pointer}
 .faq-trigger::after{content:"";flex:none;width:12px;height:12px;margin-top:-6px;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg);transition:transform .2s ease}
 .faq-trigger[aria-expanded="true"]::after{margin-top:6px;transform:rotate(-135deg)}
 .faq-answer{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
@@ -817,14 +838,143 @@ css += """
 .no-js .faq-answer{grid-template-rows:1fr}
 .no-js .faq-answer .inner{visibility:visible}
 @media (prefers-reduced-motion:reduce){.faq-answer,.faq-answer .inner,.faq-trigger::after{transition:none}}
+
+/* ───────── mobile menu + sticky call bar ───────── */
+.nav-toggle{display:none;width:46px;height:46px;padding:0;border:2px solid var(--ink);border-radius:8px;background:transparent;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.nav-toggle span{display:block;width:22px;height:3px;background:var(--ink);border-radius:2px;transition:transform .25s ease,opacity .2s ease}
+.nav-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(8px) rotate(45deg)}
+.nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+.mobile-bar{display:none}
+@media (max-width:980px){
+  .js .nav-toggle{display:flex}
+  .js .nav{position:absolute;left:0;right:0;top:100%;flex-direction:column;gap:0;padding:8px 24px 20px;background:var(--bg);border-bottom:1px solid var(--line);box-shadow:0 14px 24px rgba(11,31,68,.16);opacity:0;visibility:hidden;translate:0 -8px;transition:opacity .2s ease,translate .2s ease,visibility 0s .2s}
+  .js .nav.is-open{opacity:1;visibility:visible;translate:0 0;transition-delay:0s}
+  .js .nav a{padding:16px 4px;font-size:1.15rem;border-bottom:1px solid var(--line)}
+  .js .nav a::after{display:none}
+}
+@media (max-width:760px){
+  .mobile-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);box-shadow:0 -8px 20px rgba(11,31,68,.14)}
+  .mobile-bar .btn{width:100%;font-size:1.2rem;animation:none}
+  body{padding-bottom:78px}
+}
+
+/* ───────── animations (uses `translate`, so existing transforms are untouched) ───────── */
+@keyframes rise{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
+@keyframes pop{from{opacity:0;scale:.92}to{opacity:1;scale:1}}
+@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(107,191,31,.55)}70%{box-shadow:0 0 0 14px rgba(107,191,31,0)}100%{box-shadow:0 0 0 0 rgba(107,191,31,0)}}
+
+/* hero entrance on load */
+.hero .hero-left>*,.hero h1,.hero-sub,.hero-actions,.hero-promise,.svc-hero h1,.svc-sub,.svc-hero .hero-actions{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.hero-sub,.svc-sub{animation-delay:.12s}
+.hero-actions{animation-delay:.24s}
+.hero-promise{animation-delay:.34s}
+.hero-right{animation:pop .9s cubic-bezier(.2,.7,.2,1) .15s both}
+.hero-right img,.hero-right svg{animation:bob 6s ease-in-out 1.2s infinite}
+
+/* header */
+.site-header{transition:box-shadow .25s ease}
+.site-header.is-scrolled{box-shadow:0 6px 18px rgba(11,31,68,.14)}
+.nav a{position:relative}
+.nav a::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:3px;background:var(--green);border-radius:2px;scale:0 1;transform-origin:left;transition:scale .25s ease}
+.nav a:hover::after,.nav a:focus-visible::after,.nav a.is-active::after{scale:1 1}
+
+/* buttons and cards */
+.btn{transition:translate .18s ease,box-shadow .18s ease,background-color .18s ease,color .18s ease}
+.btn:hover{translate:0 -3px;box-shadow:0 8px 16px rgba(11,31,68,.2)}
+.btn:active{translate:0 0;box-shadow:none}
+.header-actions .btn-primary,.hero-actions .btn-primary{animation:pulse-ring 2.6s ease-out 1.5s infinite}
+.svc-card,.price-card,.review,.offer,.step{transition:translate .25s ease,box-shadow .25s ease,opacity .7s ease}
+.svc-card:hover,.review:hover,.price-card:hover{translate:0 -6px;box-shadow:0 14px 28px rgba(11,31,68,.18)}
+.offer:hover{translate:0 -4px}
+.svc-pic{transition:scale .4s ease}
+.svc-card{overflow:hidden}
+.svc-card:hover .svc-pic{scale:1.05}
+.svc-link{transition:letter-spacing .2s ease}
+.svc-card:hover .svc-link{letter-spacing:.03em}
+
+/* scroll reveal: classes are added by script.js, so no-JS visitors see everything */
+.js-reveal{opacity:0;translate:0 32px;transition:opacity .7s ease,translate .7s cubic-bezier(.2,.7,.2,1)}
+.js-reveal.is-visible{opacity:1;translate:0 0}
+.js-reveal.is-visible.svc-card:hover,.js-reveal.is-visible.review:hover,.js-reveal.is-visible.price-card:hover{translate:0 -6px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js-reveal{opacity:1;translate:none}
+}
 """
 write("style.css", css + "\n")
 
 # JS (behaviour only; all content is already in the HTML)
 js = r"""document.documentElement.classList.remove('no-js');
+document.documentElement.classList.add('js');
 
 (function () {
   'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Mobile menu
+  var toggle = document.querySelector('.nav-toggle');
+  var nav = document.getElementById('primary-nav');
+  if (toggle && nav) {
+    var setMenu = function (open) {
+      nav.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    };
+    toggle.addEventListener('click', function () { setMenu(!nav.classList.contains('is-open')); });
+    nav.addEventListener('click', function (e) { if (e.target.closest('a')) { setMenu(false); } });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { setMenu(false); toggle.focus(); } });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.site-header')) { setMenu(false); } });
+  }
+
+  // Header shadow once the page is scrolled
+  var header = document.querySelector('.site-header');
+  if (header) {
+    var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 8); };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // Scroll reveal with a small stagger between siblings
+  var revealSel = '.sec-head, .offers-head, .why-head, .team-head, .svc-card, .price-card, .price-note, .offer, ' +
+    '.how-panel, .step, .review, .gsummary, .form-card, .faq-item, .locate-info, .paybar-text, .paybar-cta, .chips li';
+  var targets = document.querySelectorAll(revealSel);
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    targets.forEach(function (el) {
+      var sibs = el.parentElement ? Array.prototype.filter.call(el.parentElement.children, function (c) { return c.matches(revealSel); }) : [];
+      el.style.transitionDelay = (Math.min(sibs.indexOf(el), 5) * 90) + 'ms';
+      el.classList.add('js-reveal');
+      io.observe(el);
+    });
+  }
+
+  // Highlight the nav link of the section in view (home page)
+  var navLinks = document.querySelectorAll('.nav a[href*="#"]');
+  if ('IntersectionObserver' in window && navLinks.length) {
+    var map = {};
+    navLinks.forEach(function (a) { map[a.getAttribute('href').split('#')[1]] = a; });
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var a = map[e.target.id];
+        if (a && e.isIntersecting) {
+          navLinks.forEach(function (l) { l.classList.remove('is-active'); });
+          a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    Object.keys(map).forEach(function (id) { var s = document.getElementById(id); if (s) { spy.observe(s); } });
+  }
 
   // FAQ accordion: collapse after load; answers stay in the DOM
   document.querySelectorAll('.faq-item').forEach(function (item) {
