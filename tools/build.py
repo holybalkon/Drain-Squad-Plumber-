@@ -102,7 +102,7 @@ ICONS = {
     "search": '<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>',
     "shield": '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
 }
-DROP = '<svg class="drop" viewBox="0 0 60 78" aria-hidden="true"><use href="#drop"/></svg>'
+DROP = '<svg class="drop" viewBox="0 0 60 88" aria-hidden="true"><use href="#drop"/></svg>'
 BTN = {
     "quote": '<a class="btn btn-primary" href="#contact">Book Free Quote</a>',
     "expert": f'<a class="btn btn-ghost" href="{TELHREF}">Talk to an Expert</a>',
@@ -391,7 +391,7 @@ NAV = [("Services", "/#services"), ("Pricing", "/#pricing"), ("Why us", "/#why")
        ("Reviews", "/#reviews"), ("Areas", "/#areas"), ("About", URL["about"])]
 
 DEFS = ('<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>'
-        '<symbol id="drop" viewBox="0 0 60 78"><path d="M30 0C30 0 0 36 0 58a30 30 0 0 0 60 0C60 36 30 0 30 0Z"/></symbol>'
+        '<symbol id="drop" viewBox="0 0 60 88"><path d="M30 0C30 0 0 36 0 58a30 30 0 0 0 60 0C60 36 30 0 30 0Z"/></symbol>'
         "</defs></svg>")
 
 HEADER = f'''<header class="site-header">
