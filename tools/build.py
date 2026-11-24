@@ -859,6 +859,23 @@ css += """
   body{padding-bottom:78px}
 }
 
+/* ───────── custom select (mirrors the native <select>, which stays for forms and no-JS) ───────── */
+.select{position:relative}
+.select-native{position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none}
+.select-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:.7em .85em;font:inherit;text-align:left;color:var(--ink);background:var(--bg);border:1.5px solid var(--line-strong);border-radius:6px;cursor:pointer;transition:border-color .2s ease,box-shadow .2s ease}
+.select-btn:hover{border-color:var(--navy)}
+.select-btn.is-placeholder .select-value{color:var(--ink-soft)}
+.select-btn::after{content:"";flex:none;width:9px;height:9px;margin-top:-4px;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);rotate:45deg;transition:rotate .2s ease,margin .2s ease}
+.select.is-open .select-btn{border-color:var(--navy);box-shadow:0 0 0 3px rgba(107,191,31,.35)}
+.select.is-open .select-btn::after{rotate:-135deg;margin-top:4px}
+.select-list{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 6px);max-height:360px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent;margin:0;padding:6px;list-style:none;background:var(--bg);border:2px solid var(--navy);border-radius:10px;box-shadow:0 16px 30px rgba(11,31,68,.22);opacity:0;visibility:hidden;translate:0 -6px;transition:opacity .18s ease,translate .18s ease,visibility 0s .18s}
+.select.is-open .select-list{opacity:1;visibility:visible;translate:0 0;transition-delay:0s}
+.select-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:.5em .8em;border-radius:6px;font-weight:500;cursor:pointer}
+.select-list li.is-placeholder{color:var(--ink-soft)}
+.select-list li.is-active{background:var(--bg-alt);box-shadow:inset 4px 0 0 var(--green)}
+.select-list li[aria-selected="true"]{font-weight:700}
+.select-list li[aria-selected="true"]:not(.is-placeholder)::after{content:"";flex:none;width:7px;height:13px;margin-top:-3px;border-right:3px solid var(--green);border-bottom:3px solid var(--green);rotate:45deg}
+
 /* ───────── animations (uses `translate`, so existing transforms are untouched) ───────── */
 @keyframes rise{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
 @keyframes pop{from{opacity:0;scale:.92}to{opacity:1;scale:1}}
@@ -1011,6 +1028,116 @@ document.documentElement.classList.add('js');
       window.print();
       clearPrint();
     });
+  });
+
+  // Styled dropdown: replaces the look of <select>, keeps it as the source of truth
+  document.querySelectorAll('.field select').forEach(function (sel) {
+    var wrap = document.createElement('div');
+    wrap.className = 'select';
+    sel.parentNode.insertBefore(wrap, sel);
+    wrap.appendChild(sel);
+    sel.classList.add('select-native');
+    sel.tabIndex = -1;
+    sel.setAttribute('aria-hidden', 'true');
+
+    var label = document.querySelector('label[for="' + sel.id + '"]');
+    if (label && !label.id) { label.id = sel.id + '-label'; }
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'select-btn';
+    btn.setAttribute('aria-haspopup', 'listbox');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', sel.id + '-list');
+    if (label) { btn.setAttribute('aria-labelledby', label.id + ' ' + sel.id + '-value'); }
+    var value = document.createElement('span');
+    value.className = 'select-value';
+    value.id = sel.id + '-value';
+    btn.appendChild(value);
+
+    var list = document.createElement('ul');
+    list.className = 'select-list';
+    list.id = sel.id + '-list';
+    list.setAttribute('role', 'listbox');
+    if (label) { list.setAttribute('aria-labelledby', label.id); }
+
+    var items = Array.prototype.map.call(sel.options, function (opt, i) {
+      var li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.id = sel.id + '-opt-' + i;
+      li.textContent = opt.text;
+      if (opt.value === '') { li.className = 'is-placeholder'; }
+      li.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      li.addEventListener('click', function () { choose(i); });
+      li.addEventListener('mousemove', function () { setActive(i); });
+      list.appendChild(li);
+      return li;
+    });
+    wrap.appendChild(btn);
+    wrap.appendChild(list);
+
+    var active = 0;
+    function render() {
+      var o = sel.options[sel.selectedIndex];
+      value.textContent = o ? o.text : '';
+      btn.classList.toggle('is-placeholder', !o || o.value === '');
+      items.forEach(function (li, i) { li.setAttribute('aria-selected', String(i === sel.selectedIndex)); });
+    }
+    function setActive(i) {
+      active = Math.max(0, Math.min(items.length - 1, i));
+      items.forEach(function (li, j) { li.classList.toggle('is-active', j === active); });
+      btn.setAttribute('aria-activedescendant', items[active].id);
+      var el = items[active];
+      if (el.offsetTop < list.scrollTop) { list.scrollTop = el.offsetTop - 6; }
+      else if (el.offsetTop + el.offsetHeight > list.scrollTop + list.clientHeight) { list.scrollTop = el.offsetTop + el.offsetHeight - list.clientHeight + 6; }
+    }
+    function isOpen() { return wrap.classList.contains('is-open'); }
+    function open() {
+      wrap.classList.add('is-open');
+      btn.setAttribute('aria-expanded', 'true');
+      setActive(sel.selectedIndex < 0 ? 0 : sel.selectedIndex);
+    }
+    function close() {
+      wrap.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.removeAttribute('aria-activedescendant');
+    }
+    function choose(i) {
+      sel.selectedIndex = i;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      render();
+      close();
+      btn.focus();
+    }
+
+    btn.addEventListener('click', function () { if (isOpen()) { close(); } else { open(); } });
+    btn.addEventListener('keydown', function (e) {
+      var k = e.key;
+      if (k === 'ArrowDown' || k === 'ArrowUp') {
+        e.preventDefault();
+        if (!isOpen()) { open(); } else { setActive(active + (k === 'ArrowDown' ? 1 : -1)); }
+      } else if (k === 'Home' && isOpen()) { e.preventDefault(); setActive(0); }
+      else if (k === 'End' && isOpen()) { e.preventDefault(); setActive(items.length - 1); }
+      else if (k === 'Enter' || k === ' ') {
+        e.preventDefault();
+        if (isOpen()) { choose(active); } else { open(); }
+      } else if (k === 'Escape' && isOpen()) { e.preventDefault(); close(); }
+      else if (k === 'Tab') { close(); }
+      else if (k.length === 1 && /\S/.test(k)) {
+        var start = isOpen() ? active + 1 : sel.selectedIndex + 1;
+        for (var n = 0; n < items.length; n++) {
+          var idx = (start + n) % items.length;
+          if (items[idx].textContent.charAt(0).toLowerCase() === k.toLowerCase()) {
+            if (isOpen()) { setActive(idx); } else { choose(idx); }
+            break;
+          }
+        }
+      }
+    });
+    document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) { close(); } });
+    if (label) { label.addEventListener('click', function (e) { e.preventDefault(); btn.focus(); }); }
+    if (sel.form) { sel.form.addEventListener('reset', function () { setTimeout(render, 0); }); }
+    render();
   });
 
   // Contact form

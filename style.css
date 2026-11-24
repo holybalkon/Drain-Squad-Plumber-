@@ -423,6 +423,23 @@ h1,h2,h3,p{margin:0}
   body{padding-bottom:78px}
 }
 
+/* ───────── custom select (mirrors the native <select>, which stays for forms and no-JS) ───────── */
+.select{position:relative}
+.select-native{position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none}
+.select-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:.7em .85em;font:inherit;text-align:left;color:var(--ink);background:var(--bg);border:1.5px solid var(--line-strong);border-radius:6px;cursor:pointer;transition:border-color .2s ease,box-shadow .2s ease}
+.select-btn:hover{border-color:var(--navy)}
+.select-btn.is-placeholder .select-value{color:var(--ink-soft)}
+.select-btn::after{content:"";flex:none;width:9px;height:9px;margin-top:-4px;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);rotate:45deg;transition:rotate .2s ease,margin .2s ease}
+.select.is-open .select-btn{border-color:var(--navy);box-shadow:0 0 0 3px rgba(107,191,31,.35)}
+.select.is-open .select-btn::after{rotate:-135deg;margin-top:4px}
+.select-list{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 6px);max-height:360px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent;margin:0;padding:6px;list-style:none;background:var(--bg);border:2px solid var(--navy);border-radius:10px;box-shadow:0 16px 30px rgba(11,31,68,.22);opacity:0;visibility:hidden;translate:0 -6px;transition:opacity .18s ease,translate .18s ease,visibility 0s .18s}
+.select.is-open .select-list{opacity:1;visibility:visible;translate:0 0;transition-delay:0s}
+.select-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:.5em .8em;border-radius:6px;font-weight:500;cursor:pointer}
+.select-list li.is-placeholder{color:var(--ink-soft)}
+.select-list li.is-active{background:var(--bg-alt);box-shadow:inset 4px 0 0 var(--green)}
+.select-list li[aria-selected="true"]{font-weight:700}
+.select-list li[aria-selected="true"]:not(.is-placeholder)::after{content:"";flex:none;width:7px;height:13px;margin-top:-3px;border-right:3px solid var(--green);border-bottom:3px solid var(--green);rotate:45deg}
+
 /* ───────── animations (uses `translate`, so existing transforms are untouched) ───────── */
 @keyframes rise{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
 @keyframes pop{from{opacity:0;scale:.92}to{opacity:1;scale:1}}
